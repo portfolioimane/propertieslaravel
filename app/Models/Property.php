@@ -1,7 +1,5 @@
 <?php
 
-// app/Models/Property.php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,11 +9,22 @@ class Property extends Model
 {
     use HasFactory;
 
-    // Define the fillable fields for mass assignment
     protected $fillable = [
-        'title', 'description', 'price', 'image'
+        'title',
+        'description',
+        'price',
+        'image',
+        'area',
+        'rooms',
+        'bathrooms',
+        'owner_name',
+        'owner_phone',
+        'owner_email',
+        'featured',  // Include featured field
     ];
 
-    // If you want to customize the table name (optional)
-    protected $table = 'properties';
+        public function photoGallery()
+    {
+        return $this->hasMany(PhotoGallery::class);
+    }
 }

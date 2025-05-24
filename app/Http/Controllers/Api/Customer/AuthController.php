@@ -95,11 +95,9 @@ public function login(Request $request)
     // Automatically login the user using Laravel Auth
     Auth::login($user);
 
-    // Generate token for the user using Sanctum
-    $token = $user->createToken('API Token')->plainTextToken;
 
     // Log the successful login
-    Log::info('Login successful', ['user_id' => $user->id, 'email' => $user->email, 'token' => $token]);
+    Log::info('Login successful', ['user_id' => $user->id, 'email' => $user->email]);
 
     // Set the HttpOnly cookie for the token
     return response()->json([
@@ -108,8 +106,25 @@ public function login(Request $request)
             'email' => $user->email,
             'role' => $user->role,
         ]
-    ])->withCookie(cookie('X-SANCTUM', $token, 60, '/', null, false, true)); // Set the cookie
+    ]);
 }
+
+
+public function logout(Request $request)
+{
+    $user = $request->user();
+
+    if ($user) {
+          Auth::logout($user);
+
+    } else {
+        Log::warning('Logout attempted without authenticated user');
+    }
+
+    // Clear the token cookie
+    return response()->json(['message' => 'Logged out successfully']);
+}
+
 
 
 
