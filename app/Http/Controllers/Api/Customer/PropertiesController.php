@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Controllers\Api\Customer;
+
+use App\Http\Controllers\Controller;
+use App\Models\Property;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class PropertiesController extends Controller
+{
+    // Fetch all properties with amenities and photo gallery
+    public function index()
+    {
+        $properties = Property::with('photoGallery')->get();
+
+        Log::info('Properties fetched with photo gallery: ', $properties->toArray());
+
+        return response()->json($properties);
+    }
+
+    // Fetch a specific property by ID with amenities and photo gallery
+    public function show($id)
+    {
+        $property = Property::with('photoGallery')->findOrFail($id);
+
+        Log::info('Property fetched with photo gallery: ', $property->toArray());
+
+        return response()->json($property);
+    }
+
+    // Fetch featured properties with amenities and photo gallery
+    public function getFeaturedProperties()
+    {
+        $featuredProperties = Property::where('featured', true)
+            ->with('photoGallery')
+            ->latest()
+            ->take(4)
+            ->get();
+
+        Log::info('Featured properties fetched with photo gallery: ', $featuredProperties->toArray());
+
+        return response()->json($featuredProperties, 200);
+    }
+}

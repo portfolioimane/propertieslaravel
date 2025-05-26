@@ -14,13 +14,14 @@ use App\Http\Controllers\Api\Backend\PropertiesController as BackendPropertiesCo
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-use App\Http\Controllers\PropertyController;
+use App\Http\Controllers\Api\Customer\PropertiesController;
 use App\Http\Controllers\Api\Customer\AuthController;
 
 
 
 // Your other routes
-Route::get('/properties', [PropertyController::class, 'index']);
+Route::get('/properties', [PropertiesController::class, 'index']);
+Route::get('properties/{property}', [PropertiesController::class, 'show']); // Fetch service by ID
 
 // routes/api.php
 Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getUser']);
@@ -36,6 +37,8 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
 	    Route::put('/properties/{propertyId}/toggle-featured', [BackendPropertiesController::class, 'toggleFeatured']);
 
 });
+
+
 
 
 
