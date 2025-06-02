@@ -25,45 +25,42 @@ public function getUser(Request $request)
     ]);
 }
 
+public function register(Request $request)
+{
+    Log::info('Registration attempt', ['request' => $request->all()]);
 
-    public function register(Request $request)
-    {
-        // Log the incoming request data
-        Log::info('Registration attempt', ['request' => $request->all()]);
+    // Validate user input
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:8|confirmed',
+        'role' => 'required|in:owner,customer',
+        'phone' => 'required_if:role,owner|nullable|string|max:20',
+    ]);
 
-        // Validate user input
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            // Remove the role from the validation rules
-            // 'role' => 'required|string|in:admin,customer', // Commented out or removed
+    if ($validator->fails()) {
+        Log::warning('Validation failed', ['errors' => $validator->errors()]);
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+
+    try {
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'phone' => $request->role === 'owner' ? $request->phone : null,
         ]);
 
-        if ($validator->fails()) {
-            Log::warning('Validation failed', ['errors' => $validator->errors()]);
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        // Create user
-        try {
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                // Set default role to 'customer' if not specified
-                'role' => 'customer', // Default role
-            ]);
-
-            Log::info('User created successfully', ['user_id' => $user->id]);
-        } catch (\Exception $e) {
-            Log::error('User creation failed', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'User registration failed'], 500);
-        }
-
-        // Do not generate token here, instead, return user details
-        return response()->json(['user' => $user], 201);
+        Log::info('User created successfully', ['user_id' => $user->id]);
+    } catch (\Exception $e) {
+        Log::error('User creation failed', ['error' => $e->getMessage()]);
+        return response()->json(['error' => 'User registration failed'], 500);
     }
+
+    return response()->json(['user' => $user], 201);
+}
+
 
 
 public function login(Request $request)
@@ -100,12 +97,8 @@ public function login(Request $request)
     Log::info('Login successful', ['user_id' => $user->id, 'email' => $user->email]);
 
     // Set the HttpOnly cookie for the token
-    return response()->json([
-        'user' => [
-            'id' => $user->id,
-            'email' => $user->email,
-            'role' => $user->role,
-        ]
+ return response()->json([
+        'user' => $user
     ]);
 }
 

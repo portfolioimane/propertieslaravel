@@ -17,10 +17,9 @@ class PropertySeeder extends Seeder
             'area' => 120,
             'rooms' => 3,
             'bathrooms' => 2,
-            'owner_name' => 'Mr. Youssef',
-            'owner_phone' => '06 12 34 56 78',
-            'owner_email' => null,
-            'featured' => true,  // This property is featured
+            'address' => '123 Rue de Fès, Fès',
+            'owner_id' => 2,  // مثلا رقم مالك موجود في جدول المستخدمين
+            'featured' => true,
         ]);
 
         Property::create([
@@ -31,10 +30,9 @@ class PropertySeeder extends Seeder
             'area' => 250,
             'rooms' => 5,
             'bathrooms' => 4,
-            'owner_name' => 'Mrs. Amina',
-            'owner_phone' => '06 23 45 67 89',
-            'owner_email' => 'amina@example.com',
-            'featured' => false,  // This property is not featured
+            'address' => '456 Avenue des Jardins, Marrakesh',
+            'owner_id' => 3,
+            'featured' => false,
         ]);
     }
 }

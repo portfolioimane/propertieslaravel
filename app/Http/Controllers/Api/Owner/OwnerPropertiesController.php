@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Backend;
+namespace App\Http\Controllers\Api\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Models\Property;
@@ -10,62 +10,74 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
-class PropertiesController extends Controller
+class OwnerPropertiesController extends Controller
 {
-    public function index()
-    {
-        $properties = Property::with('photoGallery')->get();
-        Log::info('Fetched all properties', ['properties' => $properties]);
-        return response()->json($properties);
-    }
+    
+public function index()
+{
+    // Get authenticated user ID
+    $ownerId = auth()->id();
+
+    // Fetch properties belonging to this owner, with relationships
+    $properties = Property::with('photoGallery', 'owner')
+        ->where('owner_id', $ownerId)
+        ->get();
+
+    Log::info('Fetched properties for owner', ['owner_id' => $ownerId, 'properties' => $properties]);
+
+    return response()->json($properties);
+}
+
 
     public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'area' => 'required|integer',
-            'rooms' => 'required|integer',
-            'bathrooms' => 'required|integer',
-            'owner_name' => 'required|string|max:255',
-            'owner_phone' => 'required|string|max:20',
-            'owner_email' => 'required|email|max:255',
-            'photoGallery' => 'nullable|array',
-            'photoGallery.*' => 'image|mimes:jpg,jpeg,png|max:2048',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'price' => 'required|string|max:255',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        'area' => 'required|integer',
+        'rooms' => 'required|integer',
+        'bathrooms' => 'required|integer',
+        'address' => 'required|string|max:255',
+        'photoGallery' => 'nullable|array',
+        'photoGallery.*' => 'image|mimes:jpg,jpeg,png|max:2048',
+    ]);
 
-        if ($validator->fails()) {
-            Log::error('Validation failed for property store', ['errors' => $validator->errors()]);
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $data = $request->all();
-
-        // Upload main image
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('images/properties', 'public');
-            $data['image'] = '/storage/' . $path;
-            Log::info('Property main image uploaded', ['path' => $path]);
-        }
-
-        $property = Property::create($data);
-
-        // Upload photo gallery
-        if ($request->hasFile('photoGallery')) {
-            foreach ($request->file('photoGallery') as $photo) {
-                $path = $photo->store('images/properties', 'public');
-                PhotoGallery::create([
-                    'property_id' => $property->id,
-                    'photo_url' => '/storage/' . $path,
-                ]);
-            }
-        }
-
-        Log::info('Property created', ['property' => $property]);
-        return response()->json($property, 201);
+    if ($validator->fails()) {
+        Log::error('Validation failed for property store', ['errors' => $validator->errors()]);
+        return response()->json(['errors' => $validator->errors()], 422);
     }
+
+    $data = $request->all();
+
+    // Force owner_id to be the authenticated user's ID
+    $data['owner_id'] = auth()->id();
+
+    // Upload main image
+    if ($request->hasFile('image')) {
+        $path = $request->file('image')->store('images/owner/properties', 'public');
+        $data['image'] = '/storage/' . $path;
+        Log::info('Property main image uploaded', ['path' => $path]);
+    }
+
+    $property = Property::create($data);
+
+    // Upload photo gallery
+    if ($request->hasFile('photoGallery')) {
+        foreach ($request->file('photoGallery') as $photo) {
+            $path = $photo->store('images/owner/properties', 'public');
+            PhotoGallery::create([
+                'property_id' => $property->id,
+                'photo_url' => '/storage/' . $path,
+            ]);
+        }
+    }
+
+    Log::info('Property created', ['property' => $property]);
+    return response()->json($property, 201);
+}
+
 
     public function show($id)
     {
@@ -83,9 +95,7 @@ public function update(Request $request, $id)
         'area' => 'sometimes|required|integer',
         'rooms' => 'sometimes|required|integer',
         'bathrooms' => 'sometimes|required|integer',
-        'owner_name' => 'sometimes|required|string|max:255',
-        'owner_phone' => 'sometimes|required|string|max:20',
-        'owner_email' => 'nullable|email|max:255',
+        'address' => 'required|string|max:255',      // added address validation
         'photoGallery' => 'nullable|array',
         'photoGallery.*' => 'image|mimes:jpg,jpeg,png|max:2048',
         'existingGalleryUrls' => 'nullable|array',
@@ -105,7 +115,7 @@ public function update(Request $request, $id)
         if ($property->image) {
             Storage::delete('public/' . ltrim($property->image, '/storage/'));
         }
-        $path = $request->file('image')->store('images/properties', 'public');
+        $path = $request->file('image')->store('images/owner/properties', 'public');
         $data['image'] = '/storage/' . $path;
     }
 
@@ -131,7 +141,7 @@ public function update(Request $request, $id)
     // Add new gallery images (uploaded)
     if ($request->hasFile('photoGallery')) {
         foreach ($request->file('photoGallery') as $photo) {
-            $path = $photo->store('images/properties', 'public');
+            $path = $photo->store('images/owner/properties', 'public');
             PhotoGallery::create([
                 'property_id' => $property->id,
                 'photo_url' => '/storage/' . $path,

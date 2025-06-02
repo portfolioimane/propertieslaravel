@@ -12,7 +12,7 @@ class PropertiesController extends Controller
     // Fetch all properties with amenities and photo gallery
     public function index()
     {
-        $properties = Property::with('photoGallery')->get();
+        $properties = Property::with('photoGallery', 'owner')->get();
 
         Log::info('Properties fetched with photo gallery: ', $properties->toArray());
 
