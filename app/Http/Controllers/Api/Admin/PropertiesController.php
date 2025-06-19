@@ -21,18 +21,22 @@ class PropertiesController extends Controller
 
     public function store(Request $request)
 {
-    $validator = Validator::make($request->all(), [
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'price' => 'required|string|max:255',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        'area' => 'required|integer',
-        'rooms' => 'required|integer',
-        'bathrooms' => 'required|integer',
-        'address' => 'required|string|max:255',
-        'photoGallery' => 'nullable|array',
-        'photoGallery.*' => 'image|mimes:jpg,jpeg,png|max:2048',
-    ]);
+   $validator = Validator::make($request->all(), [
+    'title' => 'required|string|max:255',
+    'description' => 'nullable|string',
+    'price' => 'required|string|max:255',
+    'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    'area' => 'required|integer',
+    'rooms' => 'required|integer',
+    'bathrooms' => 'required|integer',
+    'address' => 'required|string|max:255',
+    'city' => 'required|string|max:255',          // ✅ new
+    'type' => 'required|string|max:100',          // ✅ new
+    'offer_type' => 'required|string|max:100',    // ✅ new
+    'photoGallery' => 'nullable|array',
+    'photoGallery.*' => 'image|mimes:jpg,jpeg,png|max:2048',
+]);
+
 
     if ($validator->fails()) {
         Log::error('Validation failed for property store', ['errors' => $validator->errors()]);
@@ -78,19 +82,22 @@ class PropertiesController extends Controller
 public function update(Request $request, $id)
 {
     $validator = Validator::make($request->all(), [
-        'title' => 'sometimes|required|string|max:255',
-        'description' => 'nullable|string',
-        'price' => 'sometimes|required|string|max:255',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        'area' => 'sometimes|required|integer',
-        'rooms' => 'sometimes|required|integer',
-        'bathrooms' => 'sometimes|required|integer',
-        'address' => 'required|string|max:255',      // added address validation
-        'photoGallery' => 'nullable|array',
-        'photoGallery.*' => 'image|mimes:jpg,jpeg,png|max:2048',
-        'existingGalleryUrls' => 'nullable|array',
-        'existingGalleryUrls.*' => 'string',
-    ]);
+    'title' => 'sometimes|required|string|max:255',
+    'description' => 'nullable|string',
+    'price' => 'sometimes|required|string|max:255',
+    'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    'area' => 'sometimes|required|integer',
+    'rooms' => 'sometimes|required|integer',
+    'bathrooms' => 'sometimes|required|integer',
+    'address' => 'required|string|max:255',
+    'city' => 'sometimes|required|string|max:255',         // ✅ new
+    'type' => 'sometimes|required|string|max:100',         // ✅ new
+    'offer_type' => 'sometimes|required|string|max:100',   // ✅ new
+    'photoGallery' => 'nullable|array',
+    'photoGallery.*' => 'image|mimes:jpg,jpeg,png|max:2048',
+    'existingGalleryUrls' => 'nullable|array',
+    'existingGalleryUrls.*' => 'string',
+]);
 
     if ($validator->fails()) {
         Log::error('Validation failed for property update', ['errors' => $validator->errors()]);

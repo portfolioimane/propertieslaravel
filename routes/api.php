@@ -4,9 +4,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\PropertiesController as AdminPropertiesController;
 use App\Http\Controllers\Api\Owner\OwnerPropertiesController;
+use App\Http\Controllers\Api\Owner\OwnerContactCRMController;
+
 use App\Http\Controllers\Api\Admin\OwnersController;
 
-
+use App\Http\Controllers\Api\Customer\ContactOwnerController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -47,7 +49,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
 
 Route::prefix('owner')->middleware(['auth:sanctum', 'owner'])->group(function () {
 	    Route::apiResource('properties', OwnerPropertiesController::class);
-	  });
+
+        Route::apiResource('owner_crm_contact', OwnerContactCRMController::class);
+	});
+
+
+Route::post('/contact-owner', [ContactOwnerController::class, 'submit']);
 
 
 

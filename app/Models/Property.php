@@ -16,9 +16,12 @@ class Property extends Model
         'price',
         'image',
         'address',
+        'city',         // added city
         'area',
         'rooms',
         'bathrooms',
+        'type',         // property type: apartment, villa, etc.
+        'offer_type',   // offer type: rent, sale, etc.
         'featured',
     ];
 
@@ -28,6 +31,11 @@ class Property extends Model
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function contacts()
+    {
+        return $this->hasMany(ContactCRM::class, 'property_id');
     }
 
     /**

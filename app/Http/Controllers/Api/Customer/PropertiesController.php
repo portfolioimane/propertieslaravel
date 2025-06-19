@@ -22,7 +22,7 @@ class PropertiesController extends Controller
     // Fetch a specific property by ID with amenities and photo gallery
     public function show($id)
     {
-        $property = Property::with('photoGallery')->findOrFail($id);
+        $property = Property::with('photoGallery', 'owner')->findOrFail($id);
 
         Log::info('Property fetched with photo gallery: ', $property->toArray());
 
